@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Countdown</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const user = [{ date: "April 22, 2024 00:00:00", color: { r: 0, g: 0, b: 255 } }, { date: "October 2, 2023 14:47:32", color: { r: 102, g: 50, b: 215 } }][1]
+        const canvas = document.getElementById('canvas')
+        const ctx = canvas.getContext('2d')
+
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.font = `${canvas.width / 20}px Times New Roman`
+            ctx.textAlign = "center"
+
+        }
+        resizeCanvas()
+        window.addEventListener('resize', resizeCanvas)
+
+        const rowHeight = canvas.width / 15
+        const targetDate = new Date(user.date)
+
+        const updateTime = (offsetSeconds) => {
+            const diff = targetDate - new Date() + (offsetSeconds * 1000)
+
+            function cfs(i) {
+                return (i == 1 ? ' ' : 's')
+            }
+            function cfe(i) {
+                return (i < 10 ? ' ' : '')
+            }
+
+            const millisecondsPerSecond = 1000
+            const millisecondsPerMinute = 60 * millisecondsPerSecond
+            const millisecondsPerHour = 60 * millisecondsPerMinute
+            const millisecondsPerDay = 24 * millisecondsPerHour
+            const millisecondsPerWeek = 7 * millisecondsPerDay
+            const millisecondsPerMonth = 30 * millisecondsPerDay
+            let remainingMilliseconds = diff
+            const months = Math.floor(remainingMilliseconds / millisecondsPerMonth)
+            remainingMilgliseconds %= millisecondsPerMonth
+            const weeks = Math.floor(remainingMilliseconds / millisecondsPerWeek)
+            remainingMilliseconds %= millisecondsPerWeek
+            const days = Math.floor(remainingMilliseconds / millisecondsPerDay)
+            remainingMilliseconds %= millisecondsPerDay
+            const hours = Math.floor(remainingMilliseconds / millisecondsPerHour)
+            remainingMilliseconds %= millisecondsPerHour
+            const minutes = Math.floor(remainingMilliseconds / millisecondsPerMinute)
+            remainingMilliseconds %= millisecondsPerMinute
+            const seconds = Math.floor(remainingMilliseconds / millisecondsPerSecond)
+            remainingMilliseconds %= millisecondsPerSecond
+            return [remainingMilliseconds, `${months} Month${cfs(months)} ${weeks} Week${cfs(weeks)} ${days} Day${cfs(days)} ${hours + cfe(hours)} Hour${cfs(hours)} ${minutes + cfe(minutes)} Minute${cfs(minutes)} and ${seconds + cfe(seconds)} Second${cfs(seconds)}`]
+        }
+        let last = Math.floor((targetDate - new Date() % (1000 * 60)) / 1000)
+        let start = Date.now()
+        function main() {
+            if (last != Math.floor((targetDate - new Date() % (1000 * 60)) / 1000)) {
+                last = Math.floor((targetDate - new Date() % (1000 * 60)) / 1000)
+                start = Date.now()
+            }
+            const offset = Math.round(canvas.height / rowHeight / 2)
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            for (let index = -2; index < canvas.height / rowHeight + 2; index++) {
+                let [extra, text] = updateTime(index - offset)
+                ctx.fillStyle = index == offset ? `rgb(${user.color.r},${user.color.g},${user.color.b})` : `rgb(${Math.abs(Math.cos(extra / 1000 * Math.PI)) * user.color.r},${Math.abs(Math.cos(extra / 1000 * Math.PI)) * user.color.g},${Math.abs(Math.cos(extra / 1000 * Math.PI)) * user.color.b})`
+                ctx.fillText(text, canvas.width / 2, index * rowHeight + Math.cos(extra / 1000 * Math.PI / 2) * rowHeight - rowHeight, canvas.width, rowHeight)
+            }
+            requestAnimationFrame(main)
+        }
+        main()
+    </script>
+</body>
+
+</html>
